@@ -1,5 +1,5 @@
-import { createServer } from "http";
-import { Server } from "socket.io";
+const { createServer } = require("http");
+const { Server } = require("socket.io");
 
 const port = process.env.PORT || 8080;
 
@@ -80,6 +80,7 @@ const io = new Server(httpServer, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
+    allowedHeaders: ["my-custom-header"],
   },
 });
 
