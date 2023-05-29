@@ -1,0 +1,12 @@
+{
+  "name": "tombala-server",
+  "version": "0.0.1",
+  "description": "tombala-server",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "socket.io": "^4.6.1"
+  }
+}
