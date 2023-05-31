@@ -7,14 +7,10 @@ const httpServer = createServer();
 
 const gameNumbers = Array.from(Array(90).keys(), (e) => e + 1);
 
-const sockets = async () => {
-  let users = await io.fetchSockets();
-
-  return users;
-};
+let shadowNumbers = [...gameNumbers];
 
 let loopInterval = null;
-let remainingDraws = 5;
+let remainingDraws = 90;
 let currentNumber = -1;
 
 let winner = "";
@@ -22,51 +18,49 @@ let winner = "";
 let users = [];
 
 function selectRandom() {
-  if (gameNumbers.length === 0) {
+  if (shadowNumbers.length === 0) {
     return -1;
   }
-  let index = Math.floor(Math.random() * gameNumbers.length);
-  let number = gameNumbers[index];
-  gameNumbers.splice(index, 1);
+  let index = Math.floor(Math.random() * shadowNumbers.length);
+  let number = shadowNumbers[index];
+  shadowNumbers.splice(index, 1);
 
   return number;
 }
 
 function startGame() {
-  currentNumber = selectRandom();
   io.emit("game:started");
-  io.emit("game:draw", currentNumber);
-  console.log("game:started");
 
   loopInterval = setInterval(() => {
-    remainingDraws -= 1;
-
     if (remainingDraws === 0) {
       endGame();
       return;
     }
 
     currentNumber = selectRandom();
+    remainingDraws -= 1;
     io.emit("game:draw", currentNumber);
     console.log("game:draw", remainingDraws, currentNumber);
-  }, 1000);
+  }, 10);
 }
 
 function endGame() {
+  clearInterval(loopInterval);
+  remainingDraws = 90;
+  currentNumber = -1;
+  shadowNumbers = [...gameNumbers];
   io.emit("game:ended", {
     started: false,
     finished: true,
   });
-  clearInterval(loopInterval);
-  remainingDraws = 5;
   console.log("game:ended");
-  console.log("socket", sockets);
 }
 
 function restartGame() {
-  loopInterval = null;
-  remainingDraws = 5;
+  clearInterval(loopInterval);
+  remainingDraws = 90;
   currentNumber = -1;
+  shadowNumbers = [...gameNumbers];
   io.emit("game:restarted");
 }
 
@@ -97,7 +91,7 @@ io.on("connection", (socket) => {
 
   socket.on("player:join", (data) => {
     console.log("> Player joined", data);
-    let player = { id: _id, name: data }
+    let player = { id: _id, name: data };
     users.push(player);
 
     io.emit("player:joined", player);
@@ -120,7 +114,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", (ss) => {
-    console.log("> Player disconnected", users, _id);
+    console.log("> Player disconnected", _id);
     users = users.filter((user) => user.id !== _id);
     io.emit("player:disconnected", _id);
     console.log("ss", ss);
