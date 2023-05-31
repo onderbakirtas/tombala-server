@@ -41,7 +41,7 @@ function startGame() {
     remainingDraws -= 1;
     io.emit("game:draw", currentNumber);
     console.log("game:draw", remainingDraws, currentNumber);
-  }, 10);
+  }, 1000);
 }
 
 function endGame() {
