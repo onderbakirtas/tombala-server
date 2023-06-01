@@ -91,7 +91,7 @@ io.on("connection", (socket) => {
 
   socket.on("player:join", (data) => {
     console.log("> Player joined", data);
-    let player = { id: _id, name: data };
+    let player = { id: _id, name: data, admin: false };
     users.push(player);
 
     io.emit("player:joined", player);
