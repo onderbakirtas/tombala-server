@@ -17,6 +17,8 @@ let winner = "";
 
 let users = [];
 
+let players = {};
+
 function selectRandom() {
   if (shadowNumbers.length === 0) {
     return -1;
@@ -64,10 +66,10 @@ function restartGame() {
   io.emit("game:restarted");
 }
 
-const finishGame = () => {
+function finishGame() {
   io.emit("game:finished", winner);
   console.log("game:finished");
-};
+}
 
 // Socket.io
 const io = new Server(httpServer, {
@@ -82,7 +84,23 @@ const io = new Server(httpServer, {
 io.on("connection", (socket) => {
   const _id = socket.id;
 
-  io.emit("game:connect", users);
+  console.log("> Player connected", _id);
+
+  socket.on("room:create", (data, callback) => {
+    console.log("> Room created", data);
+
+    socket.join(data.room);
+
+    players[data.room] = [];
+    players[data.room].push({ id: _id, name: data.name, admin: true });
+
+    callback({ status: "ok" });
+  });
+
+  socket.on("player:list", (room, callback) => {
+    console.log("> Player list", players);
+    callback({ status: "ok", data: players[room] });
+  });
 
   socket.on("game:start", (data) => {
     console.log("> Game started");
